@@ -30,7 +30,7 @@ defaults write NSGlobalDomain KeyRepeat -int 1
 
 # Set a short delay until key repeat (lower = shorter delay)
 # Default is 25 (about 375ms)
-defaults write NSGlobalDomain InitialKeyRepeat -int 10
+defaults write NSGlobalDomain InitialKeyRepeat -int 30
 
 # Disable press-and-hold for keys in favor of key repeat
 defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false

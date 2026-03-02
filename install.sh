@@ -111,6 +111,11 @@ echo "    $HOME/.config/nvim -> $DOTFILES_DIR/nvim"
 create_symlink "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 create_symlink "$DOTFILES_DIR/opencode/themes/my-theme.json" "$HOME/.config/opencode/themes/my-theme.json"
 
+# karabiner (macOS)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
+fi
+
 # ------------------------------------------------------------------------------
 # 6. Setup fzf key bindings and completion
 # ------------------------------------------------------------------------------

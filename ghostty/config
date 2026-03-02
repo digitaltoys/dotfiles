@@ -6,7 +6,7 @@
 # Font
 # ------------------------------------------------------------------------------
 font-family = JetBrainsMono Nerd Font
-font-family = Noto Sans Mono CJK KR
+font-family = Apple SD Gothic Neo
 font-size = 14
 
 # ------------------------------------------------------------------------------
@@ -69,12 +69,12 @@ selection-foreground = f8f8f2
 #keybind = super+digit_7=text:\x01\x37
 #keybind = super+digit_8=text:\x01\x38
 #keybind = super+digit_9=text:\x01\x39
-keybind = ctrl+1=text:\x02\x30
-keybind = ctrl+2=text:\x02\x31
-keybind = ctrl+3=text:\x02\x32
-keybind = ctrl+4=text:\x02\x33
-keybind = ctrl+5=text:\x02\x34
-keybind = ctrl+0=text:\x02\x39
+keybind = ctrl+1=text:\x02\x31
+keybind = ctrl+2=text:\x02\x32
+keybind = ctrl+3=text:\x02\x33
+keybind = ctrl+4=text:\x02\x34
+keybind = ctrl+5=text:\x02\x35
+keybind = ctrl+0=text:\x02\x30
 
 # ------------------------------------------------------------------------------
 # Keybindings: VSCode style for nvim
@@ -85,4 +85,4 @@ keybind = super+p=text:\x1dp
 keybind = super+shift+f=text:\x1df
 
 # Cmd+N: New tmux window
-keybind = super+n=text:\x01c
+keybind = super+n=text:\x02c

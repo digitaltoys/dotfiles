@@ -26,7 +26,11 @@ fi
 # 2. Install packages from Brewfile
 # ------------------------------------------------------------------------------
 echo "==> Installing packages from Brewfile..."
-brew bundle --file="$DOTFILES_DIR/Brewfile"
+BREW_BUNDLE_FAILED=0
+if ! brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+    BREW_BUNDLE_FAILED=1
+    echo "WARN: brew bundle failed, but continuing with the rest of the setup..."
+fi
 
 # ------------------------------------------------------------------------------
 # 3. Install fzf-tab (not available via Homebrew)
@@ -179,3 +183,8 @@ echo "      dev s1                 # Create worktree + session"
 echo "      dev -l                 # List sessions"
 echo "      dev -c s1              # Clean up session"
 echo ""
+if [[ "$BREW_BUNDLE_FAILED" -eq 1 ]]; then
+    echo "    Note: Some Brewfile dependencies failed to install."
+    echo "    You can retry later with: brew bundle --file=\"$DOTFILES_DIR/Brewfile\""
+    echo ""
+fi

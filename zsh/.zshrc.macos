@@ -1,0 +1,19 @@
+# ------------------------------------------------------------------------------
+# macOS only
+# ------------------------------------------------------------------------------
+
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+if [[ -d "$ANDROID_HOME" ]]; then
+  export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+fi
+
+if [[ -d "/opt/homebrew/opt/openjdk@17/bin" ]]; then
+  export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+fi
+
+if [[ -d "/opt/homebrew/opt/libpq/bin" ]]; then
+  export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+fi
+
+alias tailscale='/Applications/Tailscale.app/Contents/MacOS/Tailscale'
+alias obs='cd ~/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/effy'

@@ -1,0 +1,11 @@
+# Optional Linux Homebrew packages
+brew "starship"
+brew "zsh-autosuggestions"
+brew "git-delta"
+brew "gh"
+brew "lazygit"
+brew "eza"
+brew "awscli"
+brew "mise"
+brew "uv"
+brew "watchman"

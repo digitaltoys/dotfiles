@@ -1,0 +1,12 @@
+# ------------------------------------------------------------------------------
+# Linux only
+# ------------------------------------------------------------------------------
+
+export ANDROID_HOME="$HOME/Android/Sdk"
+if [[ -d "$ANDROID_HOME" ]]; then
+  export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+fi
+
+if command -v tailscale >/dev/null 2>&1; then
+  alias tailscale='tailscale'
+fi

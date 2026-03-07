@@ -1,11 +1,12 @@
 # dotfiles
 
-macOS 기준 개발 환경을 빠르게 재현하기 위한 dotfiles 저장소입니다.
+macOS / Linux 개발 환경을 빠르게 재현하기 위한 dotfiles 저장소입니다.
 
 ## 핵심 내용
 
-- `install.sh` 한 번으로 Homebrew 패키지, 설정 링크, Neovim, mise, bun, 커스텀 스크립트, macOS 기본 설정까지 순서대로 적용합니다.
-- 기본적으로 `set -e`로 에러 시 중단하지만, `brew bundle` 실패는 경고만 출력하고 다음 단계를 계속 진행합니다.
+- `install.sh`는 OS를 자동 감지하고, 공통 설치 + OS 전용 설치를 분리해서 실행합니다.
+- macOS는 `install/macos.sh`, Linux는 `install/linux.sh`를 사용합니다.
+- 공통 설치는 심볼릭 링크, Neovim, mise, bun, 커스텀 스크립트를 처리합니다.
 - 주요 설정 파일은 심볼릭 링크로 연결하므로, 저장소 파일을 수정하면 실제 환경에 바로 반영됩니다.
 
 ## 빠른 시작
@@ -33,21 +34,20 @@ source ~/.zshrc
 
 주요 동작:
 
-- Homebrew 미설치 시 자동 설치
-- `Brewfile` 패키지 설치 (`brew bundle`)
+- OS 자동 감지 (`Darwin` / `Linux`)
+- OS 전용 부트스트랩 실행
+  - macOS: Homebrew + `Brewfile.macos` + `macos.sh`
+  - Linux: apt 기반 기본 패키지(`linux-packages.txt`) + 선택적 `Brewfile.linux`
 - `fzf-tab` 설치
 - LazyVim starter 준비(없을 때만)
 - 각종 설정 심볼릭 링크 생성
 - `mise` 도구 설치/신뢰 설정
 - `bun/global-packages.txt` 기반 전역 패키지 설치(개별 실패 무시)
 - `scripts/dev`를 `~/.local/bin/dev`로 링크
-- macOS에서 `macos.sh` 실행
 
 실패 처리:
 
-- `brew bundle` 실패 시 스크립트는 중단하지 않고 계속 진행
-- 마지막에 재시도 명령 안내:
-  - `brew bundle --file="$DOTFILES_DIR/Brewfile"`
+- 플랫폼 패키지 설치(`brew bundle`, `apt`) 실패 시 경고 후 가능한 다음 단계를 계속 진행
 
 ### 2) macos.sh
 
@@ -101,6 +101,10 @@ dev -c --orphans
 
 ## 주요 파일
 
-- `Brewfile`: Homebrew 패키지 목록
+- `Brewfile.macos`: macOS Homebrew 패키지 목록
+- `Brewfile.linux`: Linux(Homebrew) 선택 패키지 목록
+- `linux-packages.txt`: Linux(apt) 패키지 목록
+- `install/macos.sh`: macOS 전용 설치 로직
+- `install/linux.sh`: Linux 전용 설치 로직
 - `bun/global-packages.txt`: bun 전역 패키지 목록
 - `mise/.mise.toml`: 런타임/도구 버전 정의

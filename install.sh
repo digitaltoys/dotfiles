@@ -1,87 +1,82 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> Dotfiles installation starting..."
 echo "    Dotfiles directory: $DOTFILES_DIR"
 
+UNAME_S="$(uname -s)"
+case "$UNAME_S" in
+  Darwin)
+    PLATFORM="macos"
+    ;;
+  Linux)
+    PLATFORM="linux"
+    ;;
+  *)
+    echo "Error: Unsupported platform: $UNAME_S"
+    exit 1
+    ;;
+esac
+
+echo "==> Detected platform: $PLATFORM"
+
 # ------------------------------------------------------------------------------
-# 1. Install Homebrew (if not installed)
+# 1. Run platform bootstrap
 # ------------------------------------------------------------------------------
-if ! command -v brew &> /dev/null; then
-    echo "==> Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    
-    # Add Homebrew to PATH for Apple Silicon
-    if [[ $(uname -m) == "arm64" ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    fi
+if [[ "$PLATFORM" == "macos" ]]; then
+  "$DOTFILES_DIR/install/macos.sh" "$DOTFILES_DIR"
 else
-    echo "==> Homebrew already installed"
+  "$DOTFILES_DIR/install/linux.sh" "$DOTFILES_DIR"
 fi
 
 # ------------------------------------------------------------------------------
-# 2. Install packages from Brewfile
-# ------------------------------------------------------------------------------
-echo "==> Installing packages from Brewfile..."
-BREW_BUNDLE_FAILED=0
-if ! brew bundle --file="$DOTFILES_DIR/Brewfile"; then
-    BREW_BUNDLE_FAILED=1
-    echo "WARN: brew bundle failed, but continuing with the rest of the setup..."
-fi
-
-# ------------------------------------------------------------------------------
-# 3. Install fzf-tab (not available via Homebrew)
+# 2. Install fzf-tab (not available via package managers)
 # ------------------------------------------------------------------------------
 FZF_TAB_DIR="$HOME/.local/share/fzf-tab"
 if [[ ! -d "$FZF_TAB_DIR" ]]; then
-    echo "==> Installing fzf-tab..."
-    git clone https://github.com/Aloxaf/fzf-tab "$FZF_TAB_DIR"
+  echo "==> Installing fzf-tab..."
+  git clone https://github.com/Aloxaf/fzf-tab "$FZF_TAB_DIR"
 else
-    echo "==> fzf-tab already installed"
+  echo "==> fzf-tab already installed"
 fi
 
 # ------------------------------------------------------------------------------
-# 4. Setup LazyVim (clone starter if nvim dir is empty)
+# 3. Setup LazyVim (clone starter if nvim dir is empty)
 # ------------------------------------------------------------------------------
 NVIM_DIR="$DOTFILES_DIR/nvim"
 if [[ ! -f "$NVIM_DIR/init.lua" ]]; then
-    echo "==> Setting up LazyVim starter..."
-    # Backup existing nvim config if exists
-    if [[ -d "$HOME/.config/nvim" ]] && [[ ! -L "$HOME/.config/nvim" ]]; then
-        echo "    Backing up existing nvim config..."
-        mv "$HOME/.config/nvim" "$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
-    fi
-    
-    # Clone LazyVim starter into dotfiles
-    rm -rf "$NVIM_DIR"
-    git clone https://github.com/LazyVim/starter "$NVIM_DIR"
-    rm -rf "$NVIM_DIR/.git"
+  echo "==> Setting up LazyVim starter..."
+  if [[ -d "$HOME/.config/nvim" ]] && [[ ! -L "$HOME/.config/nvim" ]]; then
+    echo "    Backing up existing nvim config..."
+    mv "$HOME/.config/nvim" "$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
+  fi
+
+  rm -rf "$NVIM_DIR"
+  git clone https://github.com/LazyVim/starter "$NVIM_DIR"
+  rm -rf "$NVIM_DIR/.git"
 else
-    echo "==> LazyVim already configured"
+  echo "==> LazyVim already configured"
 fi
 
 # ------------------------------------------------------------------------------
-# 5. Create symbolic links
+# 4. Create symbolic links
 # ------------------------------------------------------------------------------
 echo "==> Creating symbolic links..."
 
 create_symlink() {
-    local source="$1"
-    local target="$2"
-    
-    # Create parent directory if needed
-    mkdir -p "$(dirname "$target")"
-    
-    # Remove existing file/link
-    if [[ -L "$target" ]] || [[ -f "$target" ]]; then
-        rm -f "$target"
-    fi
-    
-    ln -sf "$source" "$target"
-    echo "    $target -> $source"
+  local source="$1"
+  local target="$2"
+
+  mkdir -p "$(dirname "$target")"
+  if [[ -L "$target" ]] || [[ -f "$target" ]]; then
+    rm -f "$target"
+  fi
+
+  ln -sf "$source" "$target"
+  echo "    $target -> $source"
 }
 
 # zsh
@@ -101,7 +96,7 @@ create_symlink "$DOTFILES_DIR/tmux/.tmux.conf" "$HOME/.tmux.conf"
 
 # neovim
 if [[ -d "$HOME/.config/nvim" ]] && [[ ! -L "$HOME/.config/nvim" ]]; then
-    mv "$HOME/.config/nvim" "$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
+  mv "$HOME/.config/nvim" "$HOME/.config/nvim.backup.$(date +%Y%m%d%H%M%S)"
 fi
 rm -rf "$HOME/.config/nvim"
 ln -sf "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
@@ -111,65 +106,47 @@ echo "    $HOME/.config/nvim -> $DOTFILES_DIR/nvim"
 create_symlink "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 create_symlink "$DOTFILES_DIR/opencode/themes/my-theme.json" "$HOME/.config/opencode/themes/my-theme.json"
 
-# karabiner (macOS)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    create_symlink "$DOTFILES_DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
-fi
-
 # ------------------------------------------------------------------------------
-# 6. Setup fzf key bindings and completion
+# 5. Setup fzf key bindings and completion
 # ------------------------------------------------------------------------------
 echo "==> Setting up fzf..."
-if [[ -f "$(brew --prefix)/opt/fzf/install" ]]; then
-    "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
+if command -v brew >/dev/null 2>&1 && [[ -f "$(brew --prefix)/opt/fzf/install" ]]; then
+  "$(brew --prefix)/opt/fzf/install" --key-bindings --completion --no-update-rc --no-bash --no-fish
 fi
 
 # ------------------------------------------------------------------------------
-# 7. Setup mise (version manager)
+# 6. Setup mise (version manager)
 # ------------------------------------------------------------------------------
 echo "==> Setting up mise..."
 create_symlink "$DOTFILES_DIR/mise/.mise.toml" "$HOME/.mise.toml"
 
-# Install tools defined in mise config
-if command -v mise &> /dev/null; then
-    echo "==> Installing mise tools (node, bun)..."
-    mise install
-    mise trust "$HOME/.mise.toml"
-    mise settings set trusted_config_paths "~/workspaces"
+if command -v mise >/dev/null 2>&1; then
+  echo "==> Installing mise tools (node, bun)..."
+  mise install
+  mise trust "$HOME/.mise.toml"
+  mise settings set trusted_config_paths "~/workspaces"
 fi
 
 # ------------------------------------------------------------------------------
-# 8. Install bun global packages
+# 7. Install bun global packages
 # ------------------------------------------------------------------------------
 echo "==> Installing bun global packages..."
-if command -v bun &> /dev/null; then
-    while IFS= read -r package || [[ -n "$package" ]]; do
-        # Skip comments and empty lines
-        [[ "$package" =~ ^#.*$ ]] && continue
-        [[ -z "$package" ]] && continue
-        echo "    Installing $package..."
-        bun add -g "$package" 2>/dev/null || true
-    done < "$DOTFILES_DIR/bun/global-packages.txt"
+if command -v bun >/dev/null 2>&1; then
+  while IFS= read -r package || [[ -n "$package" ]]; do
+    [[ "$package" =~ ^#.*$ ]] && continue
+    [[ -z "$package" ]] && continue
+    echo "    Installing $package..."
+    bun add -g "$package" 2>/dev/null || true
+  done < "$DOTFILES_DIR/bun/global-packages.txt"
 fi
 
 # ------------------------------------------------------------------------------
-# 9. Install custom scripts
+# 8. Install custom scripts
 # ------------------------------------------------------------------------------
 echo "==> Installing custom scripts..."
 mkdir -p "$HOME/.local/bin"
 create_symlink "$DOTFILES_DIR/scripts/dev" "$HOME/.local/bin/dev"
 
-# ------------------------------------------------------------------------------
-# 10. Apply macOS settings
-# ------------------------------------------------------------------------------
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "==> Applying macOS settings..."
-    "$DOTFILES_DIR/macos.sh"
-fi
-
-# ------------------------------------------------------------------------------
-# Done!
-# ------------------------------------------------------------------------------
 echo ""
 echo "==> Installation complete!"
 echo ""
@@ -187,9 +164,3 @@ echo "      dev                    # Start dev session in current dir"
 echo "      dev s1                 # Create worktree + session"
 echo "      dev -l                 # List sessions"
 echo "      dev -c s1              # Clean up session"
-echo ""
-if [[ "$BREW_BUNDLE_FAILED" -eq 1 ]]; then
-    echo "    Note: Some Brewfile dependencies failed to install."
-    echo "    You can retry later with: brew bundle --file=\"$DOTFILES_DIR/Brewfile\""
-    echo ""
-fi

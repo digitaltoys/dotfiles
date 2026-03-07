@@ -1,0 +1,18 @@
+# Base CLI tools for Ubuntu/Debian
+build-essential
+curl
+git
+zsh
+fzf
+ripgrep
+bat
+fd-find
+yq
+ffmpeg
+tree
+tmux
+neovim
+python3
+python3-pip
+unzip
+zip

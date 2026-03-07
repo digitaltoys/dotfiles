@@ -10,6 +10,7 @@ fd-find
 yq
 ffmpeg
 tree
+eza
 tmux
 neovim
 python3

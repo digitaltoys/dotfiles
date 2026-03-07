@@ -21,6 +21,12 @@ install_apt_packages() {
     return
   fi
 
+  # Some containerized environments set "no new privileges", making sudo unusable.
+  if ! sudo -n true >/dev/null 2>&1; then
+    echo "WARN: sudo is not usable in this environment; skipping apt package installation"
+    return
+  fi
+
   mapfile -t pkgs < <(grep -Ev '^\s*(#|$)' "$apt_file")
   if [[ "${#pkgs[@]}" -eq 0 ]]; then
     return

@@ -37,7 +37,11 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # ------------------------------------------------------------------------------
 # Plugins
 # ------------------------------------------------------------------------------
-if command -v brew >/dev/null 2>&1; then
+if [[ -f "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "$HOME/.local/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+elif [[ -f "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+elif command -v brew >/dev/null 2>&1; then
   if [[ -f "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
     source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
   fi
